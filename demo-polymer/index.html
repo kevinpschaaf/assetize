@@ -1,0 +1,45 @@
+<script>window.process = {env: ''};</script>
+<script type="module">
+  import {Element as PolymerElement} from './assets/@polymer/polymer/polymer-element.js';
+  import {createStore} from './assets/redux/es/index.js';
+
+  console.assert(Element);
+  console.assert(createStore);
+
+  const store = createStore((state, action) => {
+    switch(action.type) {
+      case 'CHANGE':
+        return {...state, message: state.message + ' (native modules!)'};
+      default:
+        return state;
+    }
+  }, {name: 'Polymer', message: 'Reduxing with modules!'});
+
+  class MyElement extends PolymerElement {
+    static get template() {
+      return `
+        <h1>Hi there, [[name]]!</h1>
+        <button on-click="change">Clarify!</button>
+        <p>[[message]]</p>`;
+    }
+    constructor() {
+      super();
+      const update = () => {
+        const state = store.getState();
+        this.setProperties({
+          name: state.name,
+          message: state.message
+        });
+      }
+      store.subscribe(update);
+      update();
+    }
+    change() {
+      store.dispatch({type: 'CHANGE'});
+    }
+  }
+  customElements.define('my-element', MyElement);
+
+</script>
+
+<my-element></my-element>
